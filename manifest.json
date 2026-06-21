@@ -1,0 +1,16 @@
+
+{
+  "name": "HOTS FILMS21",
+  "short_name": "HOTS21",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#e50914",
+  "icons": [
+    {
+      "src": "132457.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

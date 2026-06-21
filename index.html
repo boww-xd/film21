@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTS FILMS21 - Premium Interface</title>
+    
+    <!-- PWA INTEGRATION -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="132457.png">
+    
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        body { 
+            background: #111; 
+            color: #fff; 
+            overflow-x: hidden; 
+        }
+        
+        /* Navbar & Search */
+        nav { 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); 
+            padding: 20px 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: fixed; 
+            width: 100%;
+            top: 0; 
+            z-index: 1000; 
+            transition: background 0.3s ease;
+        }
+        nav.scrolled {
+            background: rgba(0, 0, 0, 0.95);
+        }
+        
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo { 
+            font-weight: 800; 
+            font-size: 1.5rem; 
+            color: #e50914; 
+            letter-spacing: 1px;
+            cursor: pointer;
+            white-space: nowrap; 
+        }
+        
+        .search-box input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            outline: none;
+            transition: 0.3s;
+            width: 200px;
+        }
+        .search-box input:focus {
+            border-color: #e50914;
+            background: rgba(0, 0, 0, 0.8);
+            width: 230px; 
+        }
+
+        .menu-btn {
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 500;
+            transition: color 0.3s;
+            white-space: nowrap;
+        }
+        .menu-btn:hover { color: #e50914; }
+
+        /* Fullscreen Mobile Menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-menu.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .mobile-menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.5rem;
+            transition: color 0.3s;
+        }
+        .mobile-menu a:hover { color: #e50914; }
+
+        /* Hero Section */
+        .hero { 
+            height: 85vh; 
+            background-size: cover; 
+            background-position: center; 
+            display: flex; 
+            align-items: center; 
+            cursor: grab; 
+            transition: background-image 0.8s ease-in-out; 
+            position: relative;
+        }
+        .hero:active { cursor: grabbing; }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 120px;
+            background: linear-gradient(to top, #111, transparent);
+            z-index: 1;
+        }
+
+        .hero-overlay { 
+            padding: 0 40px; 
+            background: linear-gradient(to right, rgba(0,0,0,0.4), transparent); 
+            height: 100%; 
+            width: 100%; 
+            display: flex; 
+            align-items: center; 
+            z-index: 2;
+        }
+
+        .hero-container {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        /* Teks Kiri */
+        .hero-left {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        .hero h1 { 
+            font-size: 3.5rem; 
+            margin-bottom: 15px; 
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            line-height: 1.1;
+        }
+        .hero p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            color: #ddd;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+        }
+        .btn-play { 
+            background: #e50914; 
+            color: white; 
+            padding: 12px 30px; 
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            transition: background 0.3s, transform 0.2s;
+        }
+        .btn-play:hover { 
+            background: #f40612; 
+            transform: scale(1.05);
+        }
+
+        /* Viewport Carousel */
+        .hero-right {
+            flex: 0 0 45%;
+            max-width: 45%;
+            position: relative;
+            overflow: hidden; 
+            width: 100%;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            background: transparent;
+        }
+
+        /* Track Carousel */
+        .carousel-track {
+            display: flex;
+            gap: 12px; 
+            align-items: center;
+            position: absolute;
+            left: 0;
+            will-change: transform;
+        }
+
+        /* Card Poster Slider */
+        .carousel-card {
+            min-width: 95px; 
+            height: 140px;
+            border-radius: 6px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.4s ease, opacity 0.4s ease, border-color 0.4s ease;
+            opacity: 0.3;
+            user-select: none;
+            -webkit-user-drag: none;
+            border: 2px solid transparent;
+        }
+        .carousel-card:hover { opacity: 0.6; }
+        .carousel-card.active {
+            opacity: 1;
+            transform: scale(1.18); 
+            border-color: #e50914;
+        }
+
+        /* Movie Grid Bawah */
+        .content-section { 
+            padding: 20px 40px; 
+            margin-top: 10px; 
+            position: relative;
+            z-index: 3;
+        }
+        .content-section h2 { margin-bottom: 15px; font-size: 1.5rem; }
+        
+        .movie-row { 
+            display: flex; 
+            overflow-x: auto; 
+            gap: 20px; 
+            padding: 20px 0; 
+            scrollbar-width: none; 
+        }
+        .movie-row::-webkit-scrollbar { display: none; }
+        
+        .movie-card { 
+            min-width: 160px; 
+            cursor: pointer; 
+            transition: transform 0.3s ease; 
+        }
+        .movie-card:hover { transform: scale(1.1); z-index: 10; }
+        .movie-card img { width: 100%; height: 240px; object-fit: cover; border-radius: 6px; }
+
+        /* ==================== VIDEO PLAYER MODAL ==================== */
+        .player-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 950px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e50914;
+            transition: all 0.3s ease;
+        }
+        
+        /* FIX LAYAR HITAM SAAT FULLSCREEN */
+        .modal-content:fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100% !important;
+            border: none !important;
+            border-radius: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content:fullscreen .iframe-container {
+            padding-top: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+        
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: #000;
+        }
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2010;
+        }
+
+        /* 🛡️ SECURITY LAYER: TAMENG BENING ANTI-IKLAN */
+        #transparent-shield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2200; 
+            background: rgba(0, 0, 0, 0) !important; 
+            display: none; 
+            cursor: pointer;
+        }
+
+        /* 📦 MENCANGKUP SEMUA ELEMEN: INTERACTION LAYER */
+        #shield-controls-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2300; 
+            pointer-events: none; 
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #shield-controls-overlay.show {
+            opacity: 1;
+        }
+        
+        .overlay-active-elements {
+            pointer-events: auto;
+        }
+
+        /* FLOATING ACTION BAR BARIS ATAS */
+        .top-controls-bar {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2500;
+        }
+        
+        /* 💎 MODERN TRANSPARENT ICON BUTTONS */
+        .shortcut-btn {
+            background: transparent !important;
+            color: #fff;
+            border: none !important;
+            width: 42px;
+            height: 42px;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.9));
+        }
+        .shortcut-btn:hover {
+            color: #e50914;
+            transform: scale(1.15);
+        }
+        .shortcut-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* ==================== ⚙️ PREMIUM SETTINGS MENU (TITIK 3) ==================== */
+        .settings-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: rgba(10, 10, 10, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 130px;
+            z-index: 2600;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .settings-dropdown.show {
+            display: flex;
+        }
+        .dropdown-item {
+            background: transparent;
+            color: #fff;
+            border: none;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .dropdown-item:hover {
+            background: #e50914;
+            color: #fff;
+        }
+
+        /* 🔄 CSS ADAPTIVE ORIENTATION ENGINE FOR EXIT TEXT */
+        .text-landscape { display: none; }
+        .text-portrait { display: inline; }
+        
+        @media (orientation: landscape) {
+            .text-landscape { display: inline; }
+            .text-portrait { display: none; }
+        }
+
+        /* ⏩ KONTROL SKIP NAVIGASI DI TENGAH LAYAR ⏪ */
+        #center-skip-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2400;
+            display: none; /* Default disembunyikan total, hanya aktif jika isTerkunci = true */
+            gap: 25px;
+        }
+        .overlay-btn {
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .overlay-btn:hover {
+            background: #e50914;
+            border-color: #e50914;
+            transform: scale(1.1);
+        }
+
+        /* ALERT NOTIFIKASI */
+        .shield-alert {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 128, 0, 0.95);
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            z-index: 2700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            pointer-events: none;
+            text-align: center;
+            max-width: 85%;
+            width: auto;
+        }
+
+        /* ==================== RESPONSIVE FOR PORTRAIT MOBILE ==================== */
+        @media (max-width: 768px) and (orientation: portrait) {
+            nav { padding: 12px 15px; }
+            .nav-left { gap: 10px; flex: 1; max-width: 75%; }
+            .logo { font-size: 1.1rem; }
+            .search-box { flex: 1; max-width: 120px; }
+            .search-box input { width: 100%; padding: 6px 12px; font-size: 0.8rem; }
+            .menu-btn { font-size: 1rem; margin-left: auto; }
+            .hero { height: auto; min-height: 85vh; padding-top: 80px; padding-bottom: 20px; }
+            .hero-overlay { padding: 0 20px; background: transparent !important; }
+            .hero-container { flex-direction: column; text-align: center; gap: 25px; margin-top: 0; }
+            .hero-left { max-width: 100%; width: 100%; flex: unset; }
+            .hero h1 { font-size: 2.2rem; text-shadow: 2px 2px 8px rgba(0,0,0,1); }
+            .hero p { font-size: 0.95rem; margin-bottom: 20px; text-shadow: 1px 1px 6px rgba(0,0,0,1); }
+            .hero-right { max-width: 100%; width: 100%; flex: unset; height: 160px; display: flex; align-items: center; background: transparent !important; }
+            .carousel-card { min-width: 80px; height: 115px; }
+            .content-section { padding: 20px; }
+            .movie-card { min-width: 130px; }
+            .movie-card img { height: 195px; }
+            .modal-content { width: 95%; }
+            
+            .top-controls-bar { top: 12px; left: 12px; right: 12px; }
+            .shortcut-btn { width: 38px; height: 38px; }
+            .shortcut-btn svg { width: 22px; height: 22px; }
+            .settings-dropdown { top: 44px; }
+            #center-skip-overlay { gap: 12px; }
+            .overlay-btn { padding: 10px 18px; font-size: 0.85rem; }
+            .shield-alert { font-size: 0.75rem; padding: 8px 16px; width: 90%; bottom: 15px; }
+        }
+        
+    </style>
+</head>
+<body>
+
+<nav id="navbar">
+        <div class="nav-left">
+            <div class="logo" onclick="resetToTrending()">HOTS FILMS21</div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Cari..." onkeypress="handleSearch(event)">
+            </div>
+        </div>
+        <div class="menu-btn" onclick="toggleMenu()">☰ Menu</div>
+    </nav>
+
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="#" onclick="toggleMenu(); resetToTrending();">Beranda</a>
+        <a href="#" onclick="toggleMenu()">Serial TV</a>
+        <a href="#" onclick="toggleMenu()">Film</a>
+        <div class="menu-btn" onclick="toggleMenu()" style="margin-top: 30px;">✕ Tutup</div>
+    </div>
+
+    <section class="hero" id="hero">
+        <div class="hero-overlay">
+            <div class="hero-container">
+                <div class="hero-left">
+                    <h1 id="hero-title">Memuat...</h1>
+                    <p id="hero-desc">Mencari film terpopuler hari ini...</p>
+                    <button class="btn-play" onclick="playHero()">▶ Tonton Sekarang</button>
+                </div>
+                
+                <div class="hero-right" id="carousel-viewport">
+                    <div class="carousel-track" id="hero-carousel-track"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="content-section">
+        <h2 id="section-title">Trending Hari Ini</h2>
+        <div class="movie-row" id="trending-row"></div>
+    </div>
+
+    <div id="player-modal" class="player-modal">
+        <div class="modal-content" id="modal-content-area">
+            
+            <div class="iframe-container">
+                <iframe id="video-player" src="" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                
+                <div id="transparent-shield" onclick="handleShieldTap()"></div>
+                
+                <div id="shield-controls-overlay" class="show">
+                    
+                    <div class="top-controls-bar overlay-active-elements">
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button id="btn-orientation" class="shortcut-btn" onclick="UbahKeLandscape(event)" title="Ubah Format Layar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                                </svg>
+                            </button>
+                            
+                            <button id="btn-gembok" class="shortcut-btn" onclick="ToggleGembok(event)" title="Safety AdShield">
+                            </button>
+                        </div>
+
+                        <div style="position: relative;" id="settings-target-container">
+                            <button id="btn-settings" class="shortcut-btn" onclick="toggleSettingsMenu(event)" title="Pengaturan">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="5" r="1.5"></circle>
+                                    <circle cx="12" cy="12" r="1.5"></circle>
+                                    <circle cx="12" cy="19" r="1.5"></circle>
+                                </svg>
+                            </button>
+                            
+                            <div id="settings-dropdown" class="settings-dropdown">
+                                <button class="dropdown-item" onclick="handleCCClick(event)">
+                                    <span>💬 CC / Subtitle</span>
+                                </button>
+                                <button class="dropdown-item" onclick="closePlayer()">
+                                    <span class="text-landscape">↩️ Back</span>
+                                    <span class="text-portrait">✕</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="center-skip-overlay" class="overlay-active-elements">
+                        <button id="btn-skip-mundur" class="overlay-btn" onclick="SkipMundur(event)">⏪ -10s</button>
+                        <button id="btn-skip-maju" class="overlay-btn" onclick="SkipMaju(event)">⏩ +10s</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="shield-alert" class="shield-alert"></div>
+        </div>
+    </div>
+
+    <script>
+        // PWA SERVICE WORKER REGISTRATION
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .catch(err => console.log('SW failed', err));
+        }
+
+     const API_KEY = '43f171359a813f49865e48efd239d139';
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        
+        const STREAM_TOKEN = '3aNd6wD7xi8O1dNlmIfcBFMG3zmXC2UFIBZ1PJzF';
+        const STREAM_BASE_URL = 'https://vidsrc.me/embed/movie'; 
+
+        let heroMovies = [], currentIndex = 0, activeGlobalIndex = 0, slideInterval;
+        let shieldTimeout, overlayTimeout;
+
+        // VARIABLE STATE SINKRONISASI ARSITEKTUR UNITY SCRIPT
+        let isTerkunci = false;  // Unity: PadlockToggle.cs -> isTerkunci (Default: false)
+        
+        // VARIABLE TRANSLATED DARI UNITY: SkipNavigation.cs
+        let posisiSekarang = 0;       // Unity: private float posisiSekarang = 0f;
+        const nilaiLompatan = 10;     // Unity: public float nilaiLompatan = 10f;
+
+        // DATA CADANGAN ANTI STUCK JIKA LOG IN VIA LOCAL FILE / CONTENT URI
+        const DATA_CADANGAN_LOKAL = [
+            { id: 1022789, title: "Toy Story 5", overview: "Kelanjutan kisah para mainan legendaris di era modern.", backdrop_path: "/7RSZ70v94ZgkH697b8pLidNfM4N.jpg", poster_path: "/7RSZ70v94ZgkH697b8pLidNfM4N.jpg" },
+            { id: 299534, title: "Avengers: Endgame", overview: "Para Avengers bersatu kembali demi mengembalikan alam semesta.", backdrop_path: "/or066gCO6g9Yvj676wzQ0gZ75I7.jpg", poster_path: "/or066gCO6g9Yvj676wzQ0gZ75I7.jpg" },
+            { id: 19995, title: "Avatar", overview: "Kisah perjalanan seorang marinir di planet luar angkasa Pandora.", backdrop_path: "/vYvUb6YgI9vPIw9I9Q0GjR690OI.jpg", poster_path: "/6EiVI96E9wNDGg9hZ29gZl0mqpI.jpg" },
+            { id: 550, title: "Fight Club", overview: "Seorang pekerja kantor yang menderita insomnia kronis.", backdrop_path: "/bptfVGEQuv6vDTIMVCHjJ9clvI8.jpg", poster_path: "/bptfVGEQuv6vDTIMVCHjJ9clvI8.jpg" }
+        ];
+
+        function toggleMenu() {
+            document.getElementById('mobile-menu').classList.toggle('active');
+        }
+
+        function openPlayer(tmdbId) {
+            const modal = document.getElementById('player-modal');
+            const iframe = document.getElementById('video-player');
+            
+            isTerkunci = false; 
+            posisiSekarang = 0; // Reset pelacak durasi lompat video
+            
+            UpdateTampilanGembok();
+            
+            iframe.src = `${STREAM_BASE_URL}?tmdb=${tmdbId}&token=${STREAM_TOKEN}`;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; 
+
+            triggerAlert("💡 PETUNJUK: Klik tombol Play asli video terlebih dahulu. Jika diganggu iklan pop-up, klik icon 🔓 Gembok di atas untuk mengaktifkan tameng anti-iklan!", "rgba(31, 58, 86, 0.98)", 6500);
+        }
+
+        function closePlayer() {
+            const modal = document.getElementById('player-modal');
+            const iframe = document.getElementById('video-player');
+            
+            AktifkanAutoRotate();
+            document.getElementById('settings-dropdown').classList.remove('show');
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.log(err));
+            }
+            
+            iframe.src = ''; 
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; 
+        }
+
+        function triggerAlert(text, bgColor, duration = 2500) {
+            const alertBox = document.getElementById('shield-alert');
+            alertBox.innerText = text;
+            alertBox.style.background = bgColor;
+            alertBox.style.display = 'block';
+            
+            clearTimeout(shieldTimeout);
+            shieldTimeout = setTimeout(() => { alertBox.style.display = 'none'; }, duration);
+        }
+
+        /* ==================== 🔒 TRANSLATED UNITY: PadlockToggle.cs ==================== */
+        function ToggleGembok(event) {
+            if(event) event.stopPropagation();
+            isTerkunci = !isTerkunci; // Membalik status gembok
+            UpdateTampilanGembok();
+        }
+
+        function UpdateTampilanGembok() {
+            const shield = document.getElementById('transparent-shield');
+            const btnGembok = document.getElementById('btn-gembok');
+            const overlay = document.getElementById('shield-controls-overlay');
+            const skipOverlay = document.getElementById('center-skip-overlay');
+
+            if (isTerkunci) {
+                shield.style.display = 'block';
+                overlay.classList.remove('show');     
+                skipOverlay.style.display = 'flex';     
+                
+                btnGembok.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#00ff00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 5px #00ff00);">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                `;
+                triggerAlert("🔒 Tameng Aktif! Sentuh layar video untuk memicu tombol gembok dan skip video.", "rgba(0, 128, 0, 0.95)", 3500);
+            } else {
+                shield.style.display = 'none';
+                overlay.classList.add('show');         
+                skipOverlay.style.display = 'none';     
+                
+                btnGembok.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                    </svg>
+                `;
+                triggerAlert("🔓 Tameng Dimatikan. Kontrol interaksi asli player terbuka.", "rgba(229, 9, 20, 0.95)", 2500);
+            }
+        }
+
+        /* ==================== 🔄 TRANSLATED UNITY: SkipNavigation.cs ==================== */
+        function SkipMaju(event) {
+            if(event) event.stopPropagation(); 
+            posisiSekarang += nilaiLompatan;
+            triggerAlert(`⏩ Skip Maju! Posisi sekarang: ${posisiSekarang} detik`, "rgba(52, 152, 219, 0.95)", 2000);
+        }
+
+        function SkipMundur(event) {
+            if(event) event.stopPropagation();
+            posisiSekarang -= nilaiLompatan;
+            if (posisiSekarang < 0) posisiSekarang = 0; 
+            triggerAlert(`⏩ Skip Mundur! Posisi sekarang: ${posisiSekarang} detik`, "rgba(230, 126, 34, 0.95)", 2000);
+        }
+
+        /* ==================== ⚙️ DROP-DOWN SETTINGS CONTROLLER ==================== */
+        function toggleSettingsMenu(event) {
+            event.stopPropagation(); 
+            const dropdown = document.getElementById('settings-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        /* ==================== 📦 PROTECTIVE SCREEN INTERACTION LAYER MANAGEMENT ==================== */
+        function handleShieldTap() {
+            if (!isTerkunci) return; 
+            
+            const overlay = document.getElementById('shield-controls-overlay');
+            const dropdown = document.getElementById('settings-dropdown');
+            
+            if (overlay.classList.contains('show')) {
+                overlay.classList.remove('show');
+                dropdown.classList.remove('show');
+            } else {
+                overlay.classList.add('show');
+                
+                clearTimeout(overlayTimeout);
+                overlayTimeout = setTimeout(() => { 
+                    if(isTerkunci && !dropdown.classList.contains('show')) {
+                        overlay.classList.remove('show'); 
+                    }
+                }, 5000);
+            }
+        }
+
+        function handleCCClick(event) {
+            event.stopPropagation(); 
+            document.getElementById('settings-dropdown').classList.remove('show');
+            triggerAlert("💬 Subtitle Indonesia Sedang Dimuat Sistem Player", "rgba(155, 89, 182, 0.95)", 2000);
+        }
+
+        /* ==================== 🔄 SCREEN ORIENTATION CONTROLLER ==================== */
+        function UbahKeLandscape(event) {
+            if(event) event.stopPropagation();
+            const target = document.getElementById('modal-content-area');
+            const btn = document.getElementById('btn-orientation');
+
+            if (target.requestFullscreen) {
+                target.requestFullscreen().then(() => {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape-primary').catch(err => console.log(err));
+                    }
+                    btn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/>
+                        </svg>
+                    `;
+                    btn.setAttribute('onclick', 'UbahKePotret(event)');
+                }).catch(err => console.log(err));
+            }
+        }
+
+        function UbahKePotret(event) {
+            if(event) event.stopPropagation();
+            const btn = document.getElementById('btn-orientation');
+
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait-primary').catch(err => console.log(err));
+            }
+            if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen().catch(err => console.log(err));
+            }
+            btn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                </svg>
+            `;
+            btn.setAttribute('onclick', 'UbahKeLandscape(event)');
+        }
+
+        function AktifkanAutoRotate() {
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('btn-orientation');
+            if (!document.fullscreenElement) {
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                    </svg>
+                `;
+                btn.setAttribute('onclick', 'UbahKeLandscape(event)');
+                AktifkanAutoRotate(); 
+            } else {
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/>
+                    </svg>
+                `;
+                btn.setAttribute('onclick', 'UbahKePotret(event)');
+            }
+        });
+
+        /* ==================== CORE TMDB DATA ENGINE ==================== */
+        function playHero() {
+            if(heroMovies.length > 0) {
+                const movie = heroMovies[currentIndex];
+                openPlayer(movie.id);
+            }
+        }
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+        });
+
+        function updateHero(isInstant = false) {
+            if (heroMovies.length === 0) return;
+
+            const movie = heroMovies[currentIndex];
+            const title = movie.title || movie.name;
+            const desc = movie.overview ? movie.overview.substring(0, 120) + '...' : '';
+            
+            document.getElementById('hero').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${movie.backdrop_path}')`;
+            document.getElementById('hero-title').innerText = title;
+            document.getElementById('hero-desc').innerText = desc;
+
+            const track = document.getElementById('hero-carousel-track');
+            const viewport = document.getElementById('carousel-viewport');
+            const cards = document.querySelectorAll('.carousel-card');
+
+            cards.forEach((card, idx) => {
+                if (idx === activeGlobalIndex) card.classList.add('active');
+                else card.classList.remove('active');
+            });
+
+            const activeCard = cards[activeGlobalIndex];
+            if (track && viewport && activeCard) {
+                track.style.transition = isInstant ? 'none' : 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)';
+                const viewportCenter = viewport.offsetWidth / 2;
+                const cardCenter = activeCard.offsetLeft + (activeCard.offsetWidth / 2);
+                const translateX = viewportCenter - cardCenter;
+                track.style.transform = `translateX(${translateX}px)`;
+            }
+        }
+
+        function changeSlide(dir) {
+            const N = heroMovies.length;
+            activeGlobalIndex += dir;
+            currentIndex = activeGlobalIndex % N;
+            if (currentIndex < 0) currentIndex += N;
+            updateHero(false);
+        }
+
+        const trackElement = document.getElementById('hero-carousel-track');
+        trackElement.addEventListener('transitionend', () => {
+            const N = heroMovies.length;
+            if (activeGlobalIndex < N) { activeGlobalIndex += N; updateHero(true); } 
+            else if (activeGlobalIndex >= N * 2) { activeGlobalIndex -= N; updateHero(true); }
+        });
+
+        window.addEventListener('resize', () => { updateHero(true); });
+
+        function setHeroIndex(realIdx, globalIdx) {
+            clearInterval(slideInterval);
+            currentIndex = realIdx; activeGlobalIndex = globalIdx;
+            updateHero(false); startAutoSlide();
+        }
+
+        function startAutoSlide() { 
+            clearInterval(slideInterval); 
+            slideInterval = setInterval(() => changeSlide(1), 5000); 
+        }
+
+        let touchStartX = 0;
+        document.getElementById('hero').addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+        document.getElementById('hero').addEventListener('touchend', e => {
+            const diff = touchStartX - e.changedTouches[0].screenX;
+            if (Math.abs(diff) > 40) {
+                clearInterval(slideInterval);
+                changeSlide(diff > 0 ? 1 : -1);
+                startAutoSlide();
+            }
+        }, {passive: true});
+
+        let isDragging = false, mouseStartX = 0;
+        document.getElementById('hero').addEventListener('mousedown', e => { isDragging = true; mouseStartX = e.pageX; });
+        document.getElementById('hero').addEventListener('mouseup', e => {
+            if (!isDragging) return;
+            isDragging = false;
+            const diff = mouseStartX - e.pageX;
+            if (Math.abs(diff) > 40) {
+                clearInterval(slideInterval);
+                changeSlide(diff > 0 ? 1 : -1);
+                startAutoSlide();
+            }
+        });
+        document.getElementById('hero').addEventListener('mouseleave', () => isDragging = false);
+
+        async function init() {
+            let finalMovies = [];
+            try {
+                const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}&language=id-ID`);
+                const data = await res.json();
+                finalMovies = data.results;
+            } catch (error) { 
+                console.warn('Terjadi pemblokiran CORS sandboxing/offline. Mengaktifkan Data Lokal.');
+                finalMovies = DATA_CADANGAN_LOKAL;
+            }
+            
+            heroMovies = finalMovies.filter(m => m.backdrop_path && m.poster_path).slice(0, 6); 
+            const N = heroMovies.length;
+            activeGlobalIndex = N; currentIndex = 0;
+            
+            let trackHTML = '';
+            for (let set = 0; set < 3; set++) {
+                trackHTML += heroMovies.map((m, idx) => {
+                    const globalIdx = (set * N) + idx;
+                    return `<img class="carousel-card" src="https://image.tmdb.org/t/p/w300${m.poster_path}" alt="Poster" onclick="setHeroIndex(${idx}, ${globalIdx})">`;
+                }).join('');
+            }
+            document.getElementById('hero-carousel-track').innerHTML = trackHTML;
+            if (heroMovies.length > 0) { updateHero(true); startAutoSlide(); }
+            renderMovies(finalMovies);
+        }
+
+        function renderMovies(movies) {
+            const row = document.getElementById('trending-row');
+            if (!movies || movies.length === 0) { row.innerHTML = '<p style="padding: 20px;">Film tidak ditemukan.</p>'; return; }
+            row.innerHTML = movies.filter(m => m.poster_path).map(m => {
+                return `<div class="movie-card" onclick="openPlayer(${m.id})"><img src="https://image.tmdb.org/t/p/w500${m.poster_path}" alt="Poster"></div>`;
+            }).join('');
+        }
+
+        async function handleSearch(event) {
+            if (event.key === 'Enter') {
+                const query = document.getElementById('search-input').value.trim();
+                const sectionTitle = document.getElementById('section-title');
+                const row = document.getElementById('trending-row');
+                if (!query) { resetToTrending(); return; }
+                try {
+                    sectionTitle.innerText = `Hasil Pencarian: "${query}"`;
+                    row.innerHTML = '<p style="padding: 20px;">Mencari film...</p>';
+                    const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=id-ID&query=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    renderMovies(data.results);
+                } catch (error) { 
+                    const filteredLocal = DATA_CADANGAN_LOKAL.filter(m => m.title.toLowerCase().includes(query.toLowerCase()));
+                    renderMovies(filteredLocal);
+                }
+            }
+        }
+
+        function resetToTrending() { document.getElementById('search-input').value = ""; init(); }
+        init();
+        
+    </script>
+</body>
+</html>
